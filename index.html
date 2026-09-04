@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Busan Private Concierge</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b0b0b;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card {
+            width: 100%;
+            max-width: 400px;
+            background: #161616;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            border: 1px solid #222;
+        }
+        .image-container {
+            width: 100%;
+            height: 320px;
+            position: relative;
+        }
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(to top, #161616, transparent);
+        }
+        .content {
+            padding: 20px 25px 30px 25px;
+        }
+        h2 {
+            margin: 0 0 5px 0;
+            font-size: 22px;
+            letter-spacing: 0.5px;
+            color: #f3f3f3;
+        }
+        .subtitle {
+            font-size: 13px;
+            color: #d4af37;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        button {
+            width: 100%;
+            background: #d4af37;
+            color: #000;
+            border: none;
+            padding: 14px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.2s;
+            margin-top: 5px;
+        }
+        button:active {
+            background: #b8972e;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="image-container">
+            <!-- 예쁜 모델의 화보 사진 링크 (원하는 이미지 주소로 교체 가능) -->
+            <img src="model1.png" alt="Concierge Preview">
+        </div>
+        <div class="content">
+            <h2>Busan Nightlife</h2>
+            <div class="subtitle">Exclusive VIP Curation</div>
+
+            <label>Party Size</label>
+            <select id="partySize">
+                <option value="Solo">Solo Explorer</option>
+                <option value="Duo">Duo / Business Partners</option>
+                <option value="Small Group">Small Group (3-4)</option>
+                <option value="VIP Crew">VIP Crew (5+)</option>
+            </select>
+
+            <label>Preferred Vibe</label>
+            <select id="vibe">
+                <option value="Casual Bar">Casual Lounge & Bar</option>
+                <option value="Dynamic Night">Dynamic & Private Room</option>
+                <option value="Ultimate VIP">Ultimate VIP Experience</option>
+            </select>
+
+            <label>Hotel Name</label>
+            <input type="text" id="hotelInput" placeholder="e.g., Signiel Busan">
+
+            <label>WhatsApp Number</label>
+            <input type="text" id="whatsappInput" placeholder="+1 ...">
+
+            <button onclick="submitData()">Request Access</button>
+        </div>
+    </div>
+
+    <script>
+        async function submitData() {
+            const formData = {
+                partySize: document.getElementById('partySize').value,
+                vibe: document.getElementById('vibe').value,
+                hotel: document.getElementById('hotelInput').value,
+                whatsapp: document.getElementById('whatsappInput').value
+            };
+
+            // 👇 아래 작은따옴표 사이에 구글 앱스 스크립트 '웹 앱 URL'을 통째로 넣으세요
+            const webAppUrl = 'https://script.google.com/macros/s/AKfycbxP0c9yBakkaP2l8gAjWcPu2qCUJ-m_nvNtGtFxSgy19tWrbRzBD6Wjc1fE_tfHdQRDvg/exec';
+
+            if(webAppUrl.includes('AKfycbx...')) {
+                alert("Please insert your Google Web App URL first!");
+                return;
+            }
+
+            // 스마트폰 진동 피드백 (지원되는 기기 한정)
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+
+            try {
+                let response = await fetch(webAppUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                alert("Request received. Our concierge will contact you via WhatsApp shortly.");
+            } catch (error) {
+                console.error('Error:', error);
+                alert("Submission failed. Please check console.");
+            }
+        }
+    </script>
+</body>
+</html>
