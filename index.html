@@ -15,6 +15,11 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            /* 모바일/PC에서 텍스트 선택 및 드래그 방지 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         .card {
             width: 100%;
@@ -29,11 +34,21 @@
             width: 100%;
             height: 320px;
             position: relative;
+            overflow: hidden;
         }
-        .image-container img {
+        .slides {
+            display: flex;
             width: 100%;
             height: 100%;
+            transition: transform 0.4s ease-in-out;
+        }
+        .slides img {
+            width: 100%;
+            height: 100%;
+            flex-shrink: 0;
             object-fit: cover;
+            /* 이미지 드래그 방지 */
+            pointer-events: none;
         }
         .image-container::after {
             content: '';
@@ -43,6 +58,27 @@
             width: 100%;
             height: 80px;
             background: linear-gradient(to top, #161616, transparent);
+            pointer-events: none;
+        }
+        .dots {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 10;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .dot.active {
+            background: #d4af37;
         }
         .content {
             padding: 20px 25px 30px 25px;
@@ -104,9 +140,19 @@
 <body>
 
     <div class="card">
-        <div class="image-container">
-            <!-- 예쁜 모델의 화보 사진 링크 (원하는 이미지 주소로 교체 가능) -->
-            <img src="model2.jpg" alt="Concierge Preview">
+        <div class="image-container" id="sliderContainer">
+            <div class="slides" id="slidesTrack">
+                <img src="model1.jpg" alt="Concierge Preview 1">
+                <img src="model2.jpg" alt="Concierge Preview 2">
+                <img src="model3.png" alt="Concierge Preview 3">
+                <img src="model4.png" alt="Concierge Preview 4">
+            </div>
+            <div class="dots" id="dotsContainer">
+                <span class="dot active" onclick="currentSlide(0)"></span>
+                <span class="dot" onclick="currentSlide(1)"></span>
+                <span class="dot" onclick="currentSlide(2)"></span>
+                <span class="dot" onclick="currentSlide(3)"></span>
+            </div>
         </div>
         <div class="content">
             <h2>Busan Nightlife</h2>
@@ -138,6 +184,106 @@
     </div>
 
     <script>
+        // 마우스 오른쪽 클릭(컨텍스트 메뉴) 차단
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // 주요 개발자 도구 단축키 차단 (F12, Ctrl+Shift+I, Ctrl+U 등)
+        document.addEventListener('keydown', function(e) {
+            if (
+                e.key === 'F12' ||
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+                (e.ctrlKey && e.key === 'U')
+            ) {
+                e.preventDefault();
+            }
+        });
+
+        let currentIndex = 0;
+        const track = document.getElementById('slidesTrack');
+        const slides = track.getElementsByTagName('img');
+        const totalSlides = slides.length;
+        const dots = document.getElementsByClassName('dot');
+        let autoSlideTimer;
+
+        function updateSlidePosition() {
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].classList.remove('active');
+            }
+            dots[currentIndex].classList.add('active');
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % totalSlides;
+            updateSlidePosition();
+        }
+
+        function currentSlide(index) {
+            currentIndex = index;
+            updateSlidePosition();
+            resetAutoSlide();
+        }
+
+        function resetAutoSlide() {
+            clearInterval(autoSlideTimer);
+            autoSlideTimer = setInterval(nextSlide, 3500);
+        }
+
+        // 자동 슬라이드 시작 (3.5초 간격)
+        autoSlideTimer = setInterval(nextSlide, 3500);
+
+        // 터치/마우스 스와이프 기능 구현
+        let startX = 0;
+        let isDragging = false;
+
+        track.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+            clearInterval(autoSlideTimer);
+        });
+
+        track.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+        });
+
+        track.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            const endX = e.changedTouches[0].clientX;
+            const diff = startX - endX;
+
+            if (diff > 50) {
+                currentIndex = (currentIndex + 1) % totalSlides;
+            } else if (diff < -50) {
+                currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+            }
+            updateSlidePosition();
+            isDragging = false;
+            resetAutoSlide();
+        });
+
+        track.addEventListener('mousedown', (e) => {
+            startX = e.clientX;
+            isDragging = true;
+            clearInterval(autoSlideTimer);
+        });
+
+        track.addEventListener('mouseup', (e) => {
+            if (!isDragging) return;
+            const endX = e.clientX;
+            const diff = startX - endX;
+
+            if (diff > 50) {
+                currentIndex = (currentIndex + 1) % totalSlides;
+            } else if (diff < -50) {
+                currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+            }
+            updateSlidePosition();
+            isDragging = false;
+            resetAutoSlide();
+        });
+
         async function submitData() {
             const formData = {
                 partySize: document.getElementById('partySize').value,
@@ -146,7 +292,6 @@
                 whatsapp: document.getElementById('whatsappInput').value
             };
 
-            // 👇 아래 작은따옴표 사이에 구글 앱스 스크립트 '웹 앱 URL'을 통째로 넣으세요
             const webAppUrl = 'https://script.google.com/macros/s/AKfycbxP0c9yBakkaP2l8gAjWcPu2qCUJ-m_nvNtGtFxSgy19tWrbRzBD6Wjc1fE_tfHdQRDvg/exec';
 
             if(webAppUrl.includes('AKfycbx...')) {
@@ -154,7 +299,6 @@
                 return;
             }
 
-            // 스마트폰 진동 피드백 (지원되는 기기 한정)
             if (navigator.vibrate) {
                 navigator.vibrate(50);
             }
