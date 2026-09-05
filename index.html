@@ -411,46 +411,25 @@
             const budgetChecked = document.querySelector('input[name="budget"]:checked');
             const guideChecked = document.querySelector('input[name="guideType"]:checked');
 
-            // 1. 필수 입력 누락 체크
             if (!nameVal || !hotelVal || !contactVal || !partySizeChecked || !vibeChecked || !budgetChecked || !guideChecked) {
                 alert("Please fill in all required fields and select all options.");
                 return;
             }
 
-            // 2. 호텔명 길이 및 상세 검증 (예: 너무 터무니없이 짧은 경우)
             if (hotelVal.length < 2) {
                 alert("Please enter the exact hotel name (e.g., Signiel Busan).");
                 document.getElementById('hotelInput').focus();
                 return;
             }
 
-            // 3. 연락처 형식 검증 (최소 5자리 이상, 전화번호나 ID 형태)
             if (contactVal.length < 5) {
                 alert("Please enter a valid phone number, WhatsApp, or ID for contact.");
                 document.getElementById('contactInput').focus();
                 return;
             }
 
-            // 4. 최종 확인 창(Confirmation) 추가 (선택사항이지만 강력 추천)
             const isConfirmed = confirm(`Please review your details:\n\n- Name: ${nameVal}\n- Hotel: ${hotelVal}\n- Contact: ${contactVal}\n\nIs this information correct?`);
             if (!isConfirmed) {
-                return; // 사용자가 '취소'를 누르면 제출 중단
-            }
-
-            const formData = {
-                name: nameVal,
-                partySize: partySizeChecked.value,
-                vibe: vibeChecked.value,
-                budget: budgetChecked.value,
-                guideType: guideChecked.value,
-                hotel: hotelVal,
-                contact: contactVal
-            };
-
-            const webAppUrl = 'https://script.google.com/macros/s/AKfycbxP0c9yBakkaP2l8gAjWcPu2qCUJ-m_nvNtGtFxSgy19tWrbRzBD6Wjc1fE_tfHdQRDvg/exec';
-
-            if(webAppUrl.includes('AKfycbx...')) {
-                alert("Please insert your Google Web App URL first!");
                 return;
             }
 
@@ -458,18 +437,44 @@
                 navigator.vibrate(50);
             }
 
+            // 텔레그램 봇 토큰과 채널 ID 설정
+            const botToken = '8175244050:AAH2roCg92UBZfAv5eL4niMbM6LavE0VSoc';
+            const chatId = '-1004353056100';
+            const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+            const message = 
+                `🚨 [새로운 VIP 예약 요청]\n\n` +
+                `- 이름: ${nameVal}\n` +
+                `- 인원: ${partySizeChecked.value}\n` +
+                `- 바이브: ${vibeChecked.value}\n` +
+                `- 예산: $${budgetChecked.value}\n` +
+                `- 가이드 유형: ${guideChecked.value}\n` +
+                `- 호텔: ${hotelVal}\n` +
+                `- 연락처: ${contactVal}`;
+
             try {
-                let response = await fetch(webAppUrl, {
+                const response = await fetch(telegramUrl, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message
+                    })
                 });
 
-                alert("Request received. Our concierge will contact you shortly.");
+                const result = await response.json();
+
+                if (result.ok) {
+                    alert("Request received. Our concierge will contact you shortly.");
+                    // 입력창 초기화가 필요하면 여기에 추가
+                } else {
+                    alert("Submission failed. Please try again.");
+                }
             } catch (error) {
                 console.error('Error:', error);
-                alert("Submission failed. Please check console.");
+                alert("Network error. Please check your connection.");
             }
         }
     </script>
